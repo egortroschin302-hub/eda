@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кухня на 10 дней</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#E9EBE4;--card:#FCFBF7;--ink:#1B2721;--muted:#6E7A71;--line:#D3D7CB;--beet:#7A2540;--beet-soft:#F1E3E7;--ok:#3F6B4C}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:Manrope,'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.55;padding:0 0 64px}
+.wrap{max-width:720px;margin:0 auto;padding:0 18px}
+.mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+header{padding:34px 0 10px}
+h1{font-family:Unbounded,Manrope,sans-serif;font-weight:600;font-size:clamp(26px,7vw,38px);line-height:1.05;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:14.5px;margin-top:8px;max-width:52ch}
+.total{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:20px 20px 16px;margin-top:22px}
+.total-sum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(38px,11vw,58px);line-height:1;letter-spacing:-.03em;color:var(--beet)}
+.total-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.total-meta{color:var(--muted);font-size:14px;text-align:right}
+.bar{height:5px;background:var(--line);border-radius:3px;margin-top:16px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--ok);width:0;transition:width .25s ease}
+.bar-label{font-size:13px;color:var(--muted);margin-top:7px}
+.knobs{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.knob{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:14px}
+.knob label{color:var(--muted)}
+.knob input,.knob select{font:inherit;color:inherit;background:transparent;border:none;border-bottom:1.5px solid var(--beet);width:52px;padding:2px 0}
+.knob select{width:auto}
+.knob input:focus,.knob select:focus{outline:2px solid var(--beet);outline-offset:3px}
+nav{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{font:inherit;font-weight:500;background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--beet);border-bottom-color:var(--beet);font-weight:700}
+nav button:focus-visible{outline:2px solid var(--beet);outline-offset:-2px}
+section{padding-top:22px}
+section[hidden]{display:none}
+h2{font-family:Unbounded,sans-serif;font-weight:600;font-size:18px;margin:28px 0 10px;letter-spacing:-.01em}
+h2:first-child{margin-top:0}
+.note{color:var(--muted);font-size:14px;margin-bottom:14px;max-width:60ch}
+.group-head{font-size:12.5px;font-weight:700;color:var(--muted);padding:14px 2px 6px;border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:flex-start;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:hover{background:var(--card)}
+.box{flex:none;width:21px;height:21px;margin-top:2px;border:1.5px solid var(--muted);border-radius:3px;background:var(--card);display:grid;place-items:center;font-size:13px;color:#fff}
+.row.done .box{background:var(--ok);border-color:var(--ok)}
+.row.done .nm,.row.done .amt,.row.done .pr{color:var(--muted);text-decoration:line-through}
+.nm{flex:1;min-width:0;font-weight:500}
+.where{display:block;font-weight:400;font-size:12.5px;color:var(--muted);text-decoration:none!important}
+.amt{flex:none;width:82px;text-align:right;font-size:14.5px}
+.pr{flex:none;width:74px;text-align:right;font-size:14.5px;font-weight:700}
+.foot{display:flex;justify-content:space-between;gap:12px;padding:16px 4px 0;font-weight:700;font-size:17px}
+.step{display:grid;grid-template-columns:38px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.step-n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;color:var(--beet);line-height:1.2}
+.step h3{font-size:16px;margin-bottom:4px}
+.step p{font-size:14.5px;color:#39443E}
+.step .t{display:inline-block;margin-top:7px;font-size:12.5px;background:var(--beet-soft);color:var(--beet);border-radius:3px;padding:2px 8px;font-weight:700}
+.day{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:10px}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.day-h b{font-size:15px}
+.day-h span{font-size:13px;color:var(--muted)}
+.meal{display:flex;gap:12px;padding:5px 0;font-size:14.5px;border-top:1px dotted var(--line)}
+.meal:first-of-type{border-top:none}
+.meal time{flex:none;width:56px;color:var(--beet);font-weight:700;font-size:13.5px;padding-top:1px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-size:12.5px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:1px solid var(--line)}
+th:last-child{text-align:right}
+td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+td:nth-child(2){color:var(--muted);font-size:13.5px}
+td:last-child{text-align:right;white-space:nowrap}
+td input{font:inherit;font-family:'JetBrains Mono',monospace;font-weight:700;width:76px;text-align:right;padding:5px 7px;background:var(--card);border:1px solid var(--line);border-radius:3px;color:inherit}
+td input:focus{outline:2px solid var(--beet);outline-offset:1px;border-color:var(--beet)}
+.del{font:inherit;font-size:13px;background:none;border:none;color:var(--beet);cursor:pointer;padding:4px 6px;text-decoration:underline}
+.form{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:16px;margin-top:14px;display:grid;gap:12px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.field{display:grid;gap:4px}
+.field label{font-size:12.5px;color:var(--muted);font-weight:700}
+.field input,.field select{font:inherit;font-size:15px;padding:8px 10px;background:var(--paper);border:1px solid var(--line);border-radius:3px;color:inherit;width:100%}
+.field input:focus,.field select:focus{outline:2px solid var(--beet);outline-offset:1px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button.act{font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;background:var(--beet);color:#fff;border:1px solid var(--beet);border-radius:4px;padding:10px 16px}
+button.act.ghost{background:transparent;color:var(--beet)}
+button.act:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.said{font-size:14px;color:var(--ok);font-weight:700;margin-top:12px;min-height:20px}
+.pick{display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.pick:hover{background:var(--card)}
+.pick .nm small{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.pick .cost{flex:none;text-align:right;font-size:14.5px;font-weight:700}
+.pick.off .nm,.pick.off .cost{color:var(--muted)}
+.pick.off .nm b{font-weight:500}
+.warn{background:var(--beet-soft);border-left:3px solid var(--beet);padding:12px 14px;font-size:14px;border-radius:0 3px 3px 0;margin-bottom:14px}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Кухня на 10 дней</h1>
+  <p class="sub">Считает, сколько купить и во сколько это встанет, раскладывает готовку на один вечер и расписывает, что есть в какой день.</p>
+  <div class="total">
+    <div class="total-line">
+      <div class="total-sum mono" id="sum">0 ₽</div>
+      <div class="total-meta"><span class="mono" id="perday">0 ₽</span> в день<br><span class="mono" id="perkcal">0</span> ккал · <span class="mono" id="perprot">0</span> г белка</div>
+    </div>
+    <div class="bar"><span id="barfill"></span></div>
+    <div class="bar-label" id="barlabel">Куплено 0 из 0 позиций</div>
+  </div>
+  <div class="knobs">
+    <div class="knob"><label for="days">Дней</label><input id="days" type="number" min="3" max="21" value="10"></div>
+    <div class="knob"><label for="goal">Цель</label>
+      <select id="goal"><option value="1">Держать вес</option><option value="1.2">Набирать</option></select>
+    </div>
+    <div class="knob"><label for="split">Плотнее</label>
+      <select id="split">
+        <option value="12">В 12:00</option>
+        <option value="even" selected>Поровну</option>
+        <option value="1430">В 14:30</option>
+      </select>
+    </div>
+    <div class="knob"><label for="extra">Запас</label>
+      <select id="extra"><option value="1">Без запаса</option><option value="1.1" selected>+10%</option><option value="1.2">+20%</option></select>
+    </div>
+  </div>
+</header>
+
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-tab="buy">Купить</button>
+  <button role="tab" aria-selected="false" data-tab="dish">Блюда</button>
+  <button role="tab" aria-selected="false" data-tab="cook">Готовить</button>
+  <button role="tab" aria-selected="false" data-tab="menu">Меню</button>
+  <button role="tab" aria-selected="false" data-tab="price">Продукты</button>
+</nav>
+
+<section id="buy">
+  <p class="note">Отмечай по ходу магазина — крупная сумма показывает, сколько ещё осталось потратить.</p>
+  <div id="list"></div>
+  <div class="foot"><span>Всего</span><span class="mono" id="foot-sum">0 ₽</span></div>
+  <div class="actions">
+    <button class="act" id="copy">Скопировать список</button>
+    <button class="act ghost" id="uncheck">Снять отметки</button>
+  </div>
+  <div class="said" id="said1"></div>
+</section>
+
+<section id="dish" hidden>
+  <p class="note">Один список на все три приёма — каждое блюдо может попасть и в 12:00, и в 14:30, и на ужин. Отметь то, что готов есть; чем больше выбрано, тем реже повторяется. Цена приведена к одинаковой калорийности, чтобы блюда честно сравнивались между собой.</p>
+  <div class="actions" style="margin:0 0 8px">
+    <button class="act ghost" data-pickset="cheap8">8 самых дешёвых</button>
+    <button class="act ghost" data-pickset="cheap14">14 дешёвых</button>
+    <button class="act ghost" data-pickset="all">Выбрать все</button>
+    <button class="act ghost" data-pickset="none">Снять все</button>
+  </div>
+  <div id="warn"></div>
+  <div id="pick-m"></div>
+</section>
+
+<section id="cook" hidden>
+  <p class="note">Готовится всё за один вечер. Сначала на огонь то, что варится долго, потом быстрое.</p>
+  <div id="steps"></div>
+  <h2>Что куда убрать</h2>
+  <div id="storage"></div>
+</section>
+
+<section id="menu" hidden>
+  <p class="note">Порции подгоняются под то, куда ты сместил основной объём. Вечером переставляешь контейнеры на завтра из морозилки в холодильник.</p>
+  <div id="days-out"></div>
+</section>
+
+<section id="price" hidden>
+  <p class="note">Стартовые цены — средние по России, Росстат на 24.08.2026. Правь по своим чекам, всё пересчитается сразу.</p>
+  <table><thead><tr><th>Продукт</th><th>Где брать</th><th>Цена</th></tr></thead><tbody id="prices"></tbody></table>
+
+  <h2>Свои продукты</h2>
+  <p class="note">Всё, что покупаешь помимо готовки: кофе, сладкое, бытовая химия. Попадёт в список отдельной строкой и в общую сумму.</p>
+  <table><thead><tr><th>Название</th><th>Сколько</th><th>Цена</th></tr></thead><tbody id="mine"></tbody></table>
+  <div class="form">
+    <div class="form-grid">
+      <div class="field"><label for="c-name">Название</label><input id="c-name" placeholder="Кофе растворимый"></div>
+      <div class="field"><label for="c-qty">Сколько на весь срок</label><input id="c-qty" type="number" step="0.1" min="0" value="1"></div>
+      <div class="field"><label for="c-unit">Единица</label>
+        <select id="c-unit"><option>шт</option><option>кг</option><option>л</option><option>уп</option></select>
+      </div>
+      <div class="field"><label for="c-price">Цена за единицу, ₽</label><input id="c-price" type="number" step="0.01" min="0" placeholder="350"></div>
+      <div class="field"><label for="c-where">Где брать</label><input id="c-where" placeholder="Пятёрочка"></div>
+    </div>
+    <div><button class="act" id="c-add">Добавить продукт</button></div>
+  </div>
+  <div class="actions"><button class="act ghost" id="reset">Вернуть цены Росстата</button></div>
+  <div class="said" id="said2"></div>
+</section>
+
+<footer>Личный планировщик закупки и готовки. Цены и настройки хранятся только в этом браузере.</footer>
+</div>
+
+<script>
+/* ---------- хранилище ---------- */
+const store = (() => {
+  let mem = {}, ok = false;
+  try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); ok = true; } catch(e){}
+  return {
+    get:k=>{ try { return ok ? localStorage.getItem(k) : (mem[k] ?? null); } catch(e){ return mem[k] ?? null; } },
+    set:(k,v)=>{ try { ok ? localStorage.setItem(k,v) : (mem[k]=v); } catch(e){ mem[k]=v; } },
+    del:k=>{ try { ok ? localStorage.removeItem(k) : delete mem[k]; } catch(e){ delete mem[k]; } }
+  };
+})();
+
+/* ---------- продукты ---------- */
+const P = {
+  bedra:   {n:'Бёдра куриные',             u:'кг', p:250,     step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:1850, prot:170},
+  golen:   {n:'Голени куриные',            u:'кг', p:190,     step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:1550, prot:145},
+  svinina: {n:'Свинина, лопатка',          u:'кг', p:402.91,  step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:2570, prot:160},
+  farsh:   {n:'Фарш свино-куриный',        u:'кг', p:380,     step:0.5, where:'Пятёрочка, Магнит',   g:'Мясо', kcal:2200, prot:160},
+  farsh_k: {n:'Фарш куриный',              u:'кг', p:290,     step:0.5, where:'Пятёрочка, Магнит',   g:'Мясо', kcal:1430, prot:170},
+  kurica_t:{n:'Курица тушкой',              u:'кг', p:262.72,  step:1.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:1700, prot:165},
+  filet:   {n:'Филе куриное',               u:'кг', p:380,     step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:1130, prot:230},
+  krylya:  {n:'Крылья куриные',             u:'кг', p:250,     step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:1860, prot:150},
+  tushenka:{n:'Тушёнка говяжья',            u:'кг', p:440,     step:0.34,where:'Светофор, Магнит',    g:'Мясо', kcal:2200, prot:150},
+  seld:    {n:'Сельдь солёная',             u:'кг', p:280,     step:0.5, where:'Пятёрочка, Магнит',   g:'Мясо', kcal:2170, prot:170},
+  sosiski: {n:'Сосиски',                   u:'кг', p:550.42,  step:0.4, where:'Пятёрочка, по акции', g:'Мясо', kcal:2660, prot:110},
+  grechka: {n:'Гречка',                    u:'кг', p:86.52,   step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3080, prot:126},
+  ris:     {n:'Рис',                       u:'кг', p:124.37,  step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3330, prot:70},
+  perlovka:{n:'Перловка',                  u:'кг', p:70,      step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3200, prot:90},
+  psheno:  {n:'Пшено',                     u:'кг', p:66.77,   step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3480, prot:110},
+  goroh:   {n:'Горох колотый',             u:'кг', p:90,      step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3000, prot:200},
+  yachka:  {n:'Ячневая крупа',              u:'кг', p:60,      step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3130, prot:100},
+  kukur_kr:{n:'Кукурузная крупа',           u:'кг', p:80,      step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3280, prot:80},
+  bulgur:  {n:'Булгур',                     u:'кг', p:150,     step:0.8, where:'Лента, Магнит',       g:'Крупы и бакалея', kcal:3420, prot:120},
+  chechev: {n:'Чечевица',                   u:'кг', p:150,     step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3000, prot:240},
+  fasol_s: {n:'Фасоль сухая',               u:'кг', p:140,     step:0.8, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:2980, prot:210},
+  vermish: {n:'Вермишель',                  u:'кг', p:120.89,  step:0.9, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3400, prot:110},
+  makaron: {n:'Макароны',                  u:'кг', p:122.72,  step:0.9, where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:3400, prot:120},
+  muka:    {n:'Мука',                      u:'кг', p:56.70,   step:1,   where:'любой',               g:'Крупы и бакалея', kcal:3420, prot:100},
+  fasol:   {n:'Фасоль консервированная',   u:'кг', p:325,     step:0.4, where:'Пятёрочка, Магнит',   g:'Крупы и бакалея', kcal:1000, prot:65},
+  gorosh_k:{n:'Горошек консервированный',   u:'кг', p:180,     step:0.4, where:'Пятёрочка, Магнит',   g:'Крупы и бакалея', kcal:550, prot:35},
+  kukur_k: {n:'Кукуруза консервированная',  u:'кг', p:200,     step:0.4, where:'Пятёрочка, Магнит',   g:'Крупы и бакалея', kcal:580, prot:22},
+  mayonez: {n:'Майонез',                    u:'кг', p:180,     step:0.4, where:'Пятёрочка, Магнит',   g:'Крупы и бакалея', kcal:6270,prot:3},
+  ketchup: {n:'Кетчуп',                     u:'кг', p:200,     step:0.35,where:'Пятёрочка, Магнит',   g:'Крупы и бакалея', kcal:930, prot:18},
+  pasta_t: {n:'Томатная паста',            u:'кг', p:240,     step:0.5, where:'Пятёрочка',           g:'Крупы и бакалея', kcal:800,  prot:44},
+  maslo_p: {n:'Масло подсолнечное',        u:'л',  p:156.69,  step:1,   where:'Светофор, Лента',     g:'Крупы и бакалея', kcal:8990, prot:0},
+  sahar:   {n:'Сахар',                     u:'кг', p:85.33,   step:1,   where:'любой',               g:'Крупы и бакалея', kcal:3990, prot:0},
+  sol:     {n:'Соль, специи, чай — докупка',u:'наб',p:120,    step:1,   where:'любой',               g:'Крупы и бакалея', kcal:0,    prot:0, noExtra:true},
+  kartofel:{n:'Картофель',                 u:'кг', p:61.75,   step:1,   where:'рынок, сейчас сезон', g:'Овощи', kcal:770, prot:20},
+  luk:     {n:'Лук',                       u:'кг', p:58.88,   step:0.5, where:'рынок, Пятёрочка',    g:'Овощи', kcal:410, prot:14},
+  morkov:  {n:'Морковь',                   u:'кг', p:60.72,   step:0.5, where:'рынок, Пятёрочка',    g:'Овощи', kcal:350, prot:13},
+  kapusta: {n:'Капуста белокочанная',      u:'кг', p:48.80,   step:1,   where:'рынок',               g:'Овощи', kcal:280, prot:18},
+  svekla:  {n:'Свёкла',                     u:'кг', p:53.46,   step:1,   where:'рынок',               g:'Овощи', kcal:420, prot:15},
+  kabachok:{n:'Кабачок',                    u:'кг', p:90,      step:1,   where:'рынок, сейчас сезон', g:'Овощи', kcal:240, prot:6},
+  tykva:   {n:'Тыква',                      u:'кг', p:70,      step:1.5, where:'рынок, сейчас сезон', g:'Овощи', kcal:220, prot:10},
+  ogurcy_s:{n:'Огурцы солёные',             u:'кг', p:200,     step:0.7, where:'Пятёрочка, Магнит',   g:'Овощи', kcal:110, prot:8},
+  kvashen: {n:'Квашеная капуста',           u:'кг', p:150,     step:0.5, where:'рынок, Пятёрочка',    g:'Овощи', kcal:190, prot:14},
+  shampin: {n:'Шампиньоны',                 u:'кг', p:250,     step:0.5, where:'Пятёрочка, Магнит',   g:'Овощи', kcal:220, prot:43},
+  smes:    {n:'Овощная смесь замороженная',u:'кг', p:170,     step:0.4, where:'Светофор',            g:'Овощи', kcal:400, prot:20},
+  yaico:   {n:'Яйца',                      u:'шт', p:9.30,    step:10,  where:'Пятёрочка, Магнит',   g:'Молочка и яйца', kcal:70,  prot:6.3},
+  kefir:   {n:'Кефир',                     u:'л',  p:110.93,  step:1,   where:'Пятёрочка, Магнит',   g:'Молочка и яйца', kcal:530, prot:30},
+  moloko:  {n:'Молоко',                    u:'л',  p:97.45,   step:1,   where:'Пятёрочка, Магнит',   g:'Молочка и яйца', kcal:600, prot:30},
+  smetana: {n:'Сметана',                   u:'кг', p:351.82,  step:0.3, where:'Пятёрочка, Магнит',   g:'Молочка и яйца', kcal:2000,prot:25},
+  ryazhen: {n:'Ряженка',                    u:'л',  p:120,     step:1,   where:'Пятёрочка, Магнит',   g:'Молочка и яйца', kcal:670, prot:29},
+  syr:     {n:'Сыр',                       u:'кг', p:943.29,  step:0.2, where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:3600,prot:250},
+  maslo_s: {n:'Масло сливочное',           u:'кг', p:1094.59, step:0.18,where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:7480,prot:8},
+  lavash:  {n:'Лаваш тонкий',               u:'кг', p:200,     step:0.3, where:'Пятёрочка, Магнит',   g:'Хлеб', kcal:2360, prot:78},
+  hleb:    {n:'Хлеб',                      u:'кг', p:115,     step:0.4, where:'любой',               g:'Хлеб', kcal:2400, prot:80}
+};
+const BASE = Object.fromEntries(Object.entries(P).map(([k,v]) => [k, v.p]));
+const GROUPS = ['Мясо','Крупы и бакалея','Овощи','Молочка и яйца','Хлеб','Своё'];
+
+/* ---------- блюда: одна библиотека на все три приёма ---------- */
+const M = {
+  m_grech:  {n:'Гречка с запечёнными бёдрами', d:'Противень в духовку и забыл на 45 минут',
+    ing:{grechka:.095, bedra:.24, luk:.03, morkov:.03, maslo_p:.008}},
+  m_plov:   {n:'Плов с курицей', d:'Голени, много моркови, рис слоем сверху',
+    ing:{ris:.10, golen:.28, morkov:.08, luk:.05, maslo_p:.012}},
+  m_perl:   {n:'Перловка с курицей и капустой', d:'Замочить с вечера, иначе варится час',
+    ing:{perlovka:.10, golen:.26, kapusta:.10, morkov:.05, luk:.04, maslo_p:.008}},
+  m_psheno: {n:'Пшёнка с куриным соусом', d:'Самая дешёвая крупа, вкус мягче гречки',
+    ing:{psheno:.10, farsh_k:.15, luk:.04, morkov:.04, pasta_t:.02, maslo_p:.008}},
+  m_ris_sv: {n:'Рис со свининой и овощами', d:'Лопатку тушить не меньше 50 минут',
+    ing:{ris:.095, svinina:.17, smes:.08, luk:.05, morkov:.05, maslo_p:.008}},
+  m_ris_tom:{n:'Рис с курицей в томате', d:'Соус из пасты и лука, курица бёдрами',
+    ing:{ris:.10, bedra:.22, pasta_t:.03, luk:.05, morkov:.04, maslo_p:.008}},
+  m_makar:  {n:'Макароны с мясным соусом', d:'Соус в контейнер, макароны варить в тот же день',
+    ing:{makaron:.115, farsh:.14, luk:.04, morkov:.04, pasta_t:.03, maslo_p:.008}},
+  m_pure:   {n:'Пюре с котлетами', d:'Котлеты переносят заморозку лучше всего остального',
+    ing:{kartofel:.35, farsh:.15, moloko:.05, maslo_s:.01, luk:.03, muka:.01}},
+  m_kartkur:{n:'Картошка тушёная с курицей', d:'Не разваривать: после морозилки станет мягче',
+    ing:{kartofel:.35, bedra:.22, smes:.10, luk:.04, maslo_p:.008}},
+  m_kartzap:{n:'Картошка, запечённая с курицей', d:'Всё одним противнем, мыть только его',
+    ing:{kartofel:.38, golen:.26, luk:.05, morkov:.04, maslo_p:.012}},
+  m_zapek:  {n:'Картофельная запеканка с фаршем', d:'Печётся в той же духовке, что и бёдра',
+    ing:{kartofel:.35, farsh:.14, moloko:.05, yaico:1, syr:.02, luk:.04}},
+  m_kapusta:{n:'Тушёная капуста с мясом', d:'Единственное блюдо, которое на третий день вкуснее',
+    ing:{kapusta:.35, svinina:.15, morkov:.05, luk:.05, pasta_t:.02, maslo_p:.01}},
+  m_shchi:  {n:'Щи с курицей', d:'Кости от голеней дают навар, не выбрасывай',
+    ing:{kapusta:.20, kartofel:.15, golen:.25, morkov:.05, luk:.05, smetana:.03, maslo_p:.008}},
+  m_goroh:  {n:'Гороховый суп с курицей', d:'Горох — самый дешёвый белок из всех',
+    ing:{goroh:.09, golen:.22, kartofel:.12, morkov:.04, luk:.04, maslo_p:.008}},
+  m_yaica:  {n:'Яичница с картошкой и хлебом', d:'Лёгкий вариант, когда основное съедено в другой приём',
+    ing:{yaico:4, kartofel:.20, hleb:.06, maslo_s:.012, luk:.03}},
+  m_kurhleb:{n:'Курица с картошкой и салатом', d:'Холодная, из отваренного заранее — греть не надо',
+    ing:{golen:.28, kartofel:.25, kapusta:.12, morkov:.04, maslo_p:.01}},
+  m_kupech: {n:'Гречка по-купечески', d:'Фарш вмешивается в крупу, готовится в одной кастрюле',
+    ing:{grechka:.10, farsh:.15, luk:.05, morkov:.04, maslo_p:.008}},
+  m_plov_sv:{n:'Плов со свининой', d:'Жирнее куриного, но и сытнее',
+    ing:{ris:.10, svinina:.20, morkov:.08, luk:.05, maslo_p:.012}},
+  m_flot:   {n:'Макароны по-флотски с тушёнкой', d:'Готовится за 15 минут, если совсем нет времени',
+    ing:{makaron:.12, tushenka:.15, luk:.05, maslo_p:.008}},
+  m_yachka: {n:'Ячневая каша с курицей', d:'Самая дешёвая крупа в магазине',
+    ing:{yachka:.10, golen:.26, luk:.04, morkov:.04, maslo_p:.008}},
+  m_kukur:  {n:'Кукурузная каша с сыром и курицей', d:'Мешать постоянно, иначе пригорит намертво',
+    ing:{kukur_kr:.10, filet:.13, syr:.03, moloko:.08, maslo_s:.01}},
+  m_bulgur: {n:'Булгур с курицей и овощами', d:'Заливается кипятком и доходит сам, варить не надо',
+    ing:{bulgur:.10, filet:.15, smes:.08, luk:.04, maslo_p:.008}},
+  m_chechev:{n:'Чечевица с мясом', d:'Белка больше, чем в любой другой крупе',
+    ing:{chechev:.09, farsh_k:.13, luk:.05, morkov:.05, pasta_t:.02, maslo_p:.008}},
+  m_fasol:  {n:'Фасоль тушёная с мясом', d:'Сухую замочить на ночь, консервная втрое дороже',
+    ing:{fasol_s:.09, svinina:.13, luk:.05, morkov:.04, pasta_t:.03, maslo_p:.008}},
+  m_borsch: {n:'Борщ со свининой', d:'Свёклу тушить отдельно с уксусом, чтобы не побледнела',
+    ing:{svekla:.12, kapusta:.15, kartofel:.15, svinina:.13, morkov:.05, luk:.05, pasta_t:.02, smetana:.03}},
+  m_frikad: {n:'Суп с фрикадельками', d:'Фрикадельки можно накатать и заморозить впрок',
+    ing:{farsh:.10, kartofel:.18, vermish:.03, morkov:.04, luk:.04, maslo_p:.008}},
+  m_rassol: {n:'Рассольник с курицей', d:'Огурцы добавлять последними, иначе картошка не разварится',
+    ing:{perlovka:.05, ogurcy_s:.08, kartofel:.15, golen:.20, morkov:.04, luk:.04, smetana:.02}},
+  m_krylya: {n:'Крылья запечённые с картошкой', d:'Один противень, мяса мало, но вкус сильный',
+    ing:{krylya:.28, kartofel:.30, luk:.04, maslo_p:.01}},
+  m_golubcy:{n:'Ленивые голубцы', d:'Капуста, фарш и рис в одной сковороде — не надо крутить',
+    ing:{kapusta:.25, farsh:.13, ris:.04, morkov:.04, luk:.04, pasta_t:.02, smetana:.02}},
+  m_gulyash:{n:'Гуляш из свинины с гречкой', d:'Подливу загустить ложкой муки в конце',
+    ing:{svinina:.16, grechka:.09, luk:.05, morkov:.04, muka:.01, pasta_t:.02, maslo_p:.008}},
+  m_omlet:  {n:'Омлет с картошкой и сыром', d:'Заморозку переносит плохо, ставь на первые дни',
+    ing:{yaico:4, moloko:.10, kartofel:.15, syr:.03, maslo_s:.012}},
+  m_kapsos: {n:'Тушёная капуста с сосисками', d:'Быстро и без возни, но белка немного',
+    ing:{kapusta:.35, sosiski:.12, morkov:.05, luk:.05, pasta_t:.02, maslo_p:.01}},
+  m_seld:   {n:'Сельдь с картошкой и луком', d:'Единственная рыба тут, вкус совсем не как у минтая',
+    ing:{seld:.12, kartofel:.30, luk:.05, maslo_p:.015}},
+  m_griby:  {n:'Картошка с грибами и курицей', d:'Шампиньоны жарить на сухой сковороде до выпаривания',
+    ing:{kartofel:.30, shampin:.10, golen:.22, luk:.05, maslo_p:.012}},
+  m_kurica: {n:'Курица целиком с рисом', d:'Тушка дешевле частей, разделать — десять минут',
+    ing:{kurica_t:.35, ris:.09, morkov:.04, luk:.04, maslo_p:.008}},
+  m_tykva:  {n:'Пшённая каша с тыквой', d:'Сладкая и дешёвая, но белка почти нет — не ставь два раза подряд',
+    ing:{psheno:.09, tykva:.15, moloko:.15, sahar:.01, maslo_s:.01}},
+  m_vinegret:{n:'Винегрет с курицей', d:'Свёкла, картошка и солёные огурцы — варится всё разом',
+    ing:{svekla:.15, kartofel:.20, ogurcy_s:.07, golen:.20, luk:.03, maslo_p:.015}},
+  m_kabach: {n:'Кабачки тушёные с фаршем', d:'Пока сезон — самое дешёвое овощное блюдо',
+    ing:{kabachok:.30, farsh_k:.14, kartofel:.15, luk:.05, morkov:.04, pasta_t:.02, maslo_p:.01}}
+};
+const DAILY = {hleb:.08, kapusta:.10, morkov:.03, maslo_p:.008, sahar:.015};
+const KCAL_DAY = 2550;               // база на день при цели «держать вес»
+const SHARE = {                       // доля дневных калорий по приёмам
+  '12':   [.40, .27, .33],
+  'even': [.335,.335,.33],
+  '1430': [.27, .40, .33]
+};
+
+/* ---------- состояние ---------- */
+Object.keys(P).forEach(k => {
+  const v = store.get('price_' + k);
+  if (v !== null && !isNaN(parseFloat(v))) P[k].p = parseFloat(v);
+});
+let checked = new Set(JSON.parse(store.get('checked') || '[]'));
+let custom  = JSON.parse(store.get('custom') || '[]');
+let onM = new Set(JSON.parse(store.get('onM') || JSON.stringify(Object.keys(M))));
+
+const dishCost = ing => Object.entries(ing).reduce((s,[k,q]) => s + q * P[k].p, 0);
+const dishKcal = ing => Object.entries(ing).reduce((s,[k,q]) => s + q * (P[k].kcal || 0), 0);
+const dishNorm = ing => dishCost(ing) * 800 / dishKcal(ing);   // цена при равных калориях
+const rub = v => Math.round(v).toLocaleString('ru-RU') + ' ₽';
+const amt = i => i.unit === 'шт' ? i.qty + ' шт' : (i.qty % 1 === 0 ? i.qty : +i.qty.toFixed(2)) + ' ' + i.unit;
+
+/* ---------- расчёт ---------- */
+function plan(){
+  const days = Math.max(3, Math.min(21, parseInt(document.getElementById('days').value) || 10));
+  const goal = parseFloat(document.getElementById('goal').value);
+  const extra = parseFloat(document.getElementById('extra').value);
+  const share = SHARE[document.getElementById('split').value] || SHARE.even;
+  const mk = [...onM];
+  if (!mk.length) return {days, items:[], kcal:0, prot:0, empty:true};
+
+  // калории, которые остаются блюдам после хлеба, салата и масла
+  const dailyKcal = Object.entries(DAILY).reduce((s,[k,q]) => s + q * (P[k].kcal || 0), 0) * goal;
+  const budget = KCAL_DAY * goal - dailyKcal;
+
+  const need = {}, add = (k,q) => need[k] = (need[k] || 0) + q;
+  const menu = [];
+  for (let d = 0; d < days; d++){
+    const ids = [0,1,2].map(i => mk[(d * 3 + i) % mk.length]);
+    const row = [];
+    ids.forEach((id, i) => {
+      const base = dishKcal(M[id].ing);
+      const f = Math.max(.6, Math.min(1.7, budget * share[i] / base));
+      row.push({id, f});
+      for (const [k,q] of Object.entries(M[id].ing)) add(k, q * f);
+    });
+    menu.push(row);
+    for (const [k,q] of Object.entries(DAILY)) add(k, q * goal);
+  }
+  add('sol', 1);
+
+  let kcal = 0, prot = 0;
+  const items = Object.entries(need).map(([k,q]) => {
+    const it = P[k];
+    kcal += (it.kcal || 0) * q; prot += (it.prot || 0) * q;
+    const buy = Math.ceil(q * (it.noExtra ? 1 : extra) / it.step - 0.001) * it.step;
+    const qty = it.u === 'шт' ? Math.round(buy) : Math.round(buy * 100) / 100;
+    return {k, name:it.n, unit:it.u, where:it.where, group:it.g, qty, cost: qty * it.p};
+  });
+  custom.forEach(c => items.push({
+    k:'c_' + c.id, name:c.name, unit:c.unit, where:c.where || '', group:'Своё',
+    qty:c.qty, cost:c.qty * c.price
+  }));
+  items.sort((a,b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || b.cost - a.cost);
+  return {days, items, kcal:Math.round(kcal/days), prot:Math.round(prot/days), menu};
+}
+
+/* ---------- отрисовка ---------- */
+let cur;
+function render(){
+  cur = plan();
+  const {items, days} = cur;
+  const total = items.reduce((s,i) => s + i.cost, 0);
+  const left  = items.filter(i => !checked.has(i.k)).reduce((s,i) => s + i.cost, 0);
+  const done  = items.filter(i => checked.has(i.k)).length;
+
+  document.getElementById('sum').textContent = rub(left);
+  document.getElementById('perday').textContent = rub(total / days);
+  document.getElementById('perkcal').textContent = (cur.kcal || 0).toLocaleString('ru-RU');
+  document.getElementById('perprot').textContent = cur.prot || 0;
+  document.getElementById('foot-sum').textContent = rub(total);
+  document.getElementById('barfill').style.width = (items.length ? done/items.length*100 : 0) + '%';
+  document.getElementById('barlabel').textContent = `Куплено ${done} из ${items.length} позиций`;
+
+  const list = document.getElementById('list');
+  if (cur.empty){
+    list.innerHTML = '<div class="warn">Не выбрано ни одного блюда. Открой вкладку «Блюда» и отметь хотя бы по одному обеду, ужину и перекусу.</div>';
+  } else {
+    list.innerHTML = GROUPS.map(g => {
+      const rows = items.filter(i => i.group === g);
+      if (!rows.length) return '';
+      return `<div class="group-head">${g}</div>` + rows.map(i => `
+        <div class="row ${checked.has(i.k) ? 'done' : ''}" data-k="${i.k}" role="button" tabindex="0">
+          <span class="box">${checked.has(i.k) ? '✓' : ''}</span>
+          <span class="nm">${i.name}${i.where ? `<span class="where">${i.where}</span>` : ''}</span>
+          <span class="amt mono">${amt(i)}</span>
+          <span class="pr mono">${rub(i.cost)}</span>
+        </div>`).join('');
+    }).join('');
+  }
+  renderPicks(); renderCook(); renderMenu();
+}
+
+function renderPicks(){
+  document.getElementById('pick-m').innerHTML =
+    Object.entries(M).sort((a,b) => dishNorm(a[1].ing) - dishNorm(b[1].ing)).map(([k,v]) => `
+      <div class="pick ${onM.has(k) ? '' : 'off'}" data-d="${k}" role="button" tabindex="0">
+        <span class="box">${onM.has(k) ? '✓' : ''}</span>
+        <span class="nm"><b>${v.n}</b><small>${v.d}</small></span>
+        <span class="cost mono">${rub(dishNorm(v.ing))}</span>
+      </div>`).join('');
+  document.getElementById('warn').innerHTML = onM.size < 3
+    ? `<div class="warn">Выбрано ${onM.size === 0 ? 'ноль блюд' : onM.size === 1 ? 'одно блюдо' : 'два блюда'} — на три приёма в день нужно минимум три, иначе одно и то же будет повторяться внутри одного дня.</div>` : '';
+}
+
+function renderCook(){
+  const stepsEl = document.getElementById('steps'), storEl = document.getElementById('storage');
+  if (cur.empty){ stepsEl.innerHTML = ''; storEl.innerHTML = ''; return; }
+  const tally = {};
+  cur.menu.flat().forEach(m => tally[m.id] = (tally[m.id] || 0) + 1);
+  const long = [], fast = [];
+  Object.entries(tally).forEach(([id, n]) => {
+    const v = M[id];
+    const slow = ['svinina','perlovka','goroh'].some(x => x in v.ing);
+    (slow ? long : fast).push(`${v.n} — ${n} порц.`);
+  });
+
+  const steps = [
+    {t:'Накануне', h:'Замочить то, что этого требует',
+     p:'Перловку и горох залить холодной водой на ночь. Иначе перловка варится час с лишним, а горох останется дробью в супе.', m:'2 минуты'},
+    {t:'0:00', h:'Духовка на 200°',
+     p:'Всё, что запекается, идёт первым: бёдра и картошка на противень, запеканка в форму. Дальше про духовку можно забыть.', m:'45 минут'},
+    {t:'0:05', h:'Долгое на медленный огонь',
+     p: long.length ? long.join('. ') + '. Это варится и тушится дольше всего, поэтому ставится сразу и стоит в фоне.' : 'В этот раз ничего долгого не выбрано — можно начинать сразу с гарниров.', m:'50 минут'},
+    {t:'0:10', h:'Крупы на двух конфорках',
+     p:'Гречка один к двум, рис промыть до прозрачной воды, пшено ошпарить кипятком от горчинки. Недоваривай пару минут: в контейнере дойдут сами.', m:'25 минут'},
+    {t:'0:30', h:'Быстрое',
+     p: fast.length ? fast.join('. ') + '.' : '—', m:'40 минут'},
+    {t:'1:40', h:'Разложить по трём приёмам',
+     p:'На каждый день уходит три контейнера, поэтому раскладывай сразу тройками и подписывай день. Остудить на столе до комнатной температуры и только потом закрывать крышками, иначе внутри соберётся конденсат.', m:'25 минут'},
+    {t:'2:10', h:'Яйца, курица, капуста',
+     p:'Сварить десяток яиц. Отварить курицу и снять мясо с кости. Капусту шинковать только на три дня вперёд — заправленная она течёт.', m:'25 минут'}
+  ];
+  stepsEl.innerHTML = steps.map((s,i) => `
+    <div class="step"><div class="step-n mono">${i+1}</div>
+    <div><h3>${s.h}</h3><p>${s.p}</p><span class="t mono">${s.t} · ${s.m}</span></div></div>`).join('');
+
+  const fridge = Math.min(4, cur.days) * 3;
+  storEl.innerHTML = `<div class="day">
+      <div class="meal"><time>0–3 дн</time><div>${fridge} контейнеров в холодильник — четыре дня по три приёма.</div></div>
+      <div class="meal"><time>4+ дн</time><div>${cur.days * 3 - fridge} контейнеров в морозилку. Достаёшь тройку накануне вечером.</div></div>
+      <div class="meal"><time>Докуп</time><div>На 5–6 день сходить за молочкой и хлебом — столько они не живут.</div></div>
+    </div>`;
+}
+
+function renderMenu(){
+  const out = document.getElementById('days-out');
+  if (cur.empty){ out.innerHTML = ''; return; }
+  const size = f => f > 1.25 ? 'большая порция' : f < .85 ? 'малая порция' : '';
+  out.innerHTML = cur.menu.map((row, d) => {
+    const meals = [['12:00', row[0]], ['14:30', row[1]], ['20:30', row[2]]];
+    return `<div class="day">
+      <div class="day-h"><b>День ${d+1}</b><span>${d < Math.min(4, cur.days) ? 'из холодильника' : 'из морозилки, достать накануне'}</span></div>
+      ${meals.map(([t, m]) => {
+        const s = size(m.f);
+        return `<div class="meal"><time>${t}</time><div>${M[m.id].n}${s ? ` <span style="color:var(--muted)">· ${s}</span>` : ''}</div></div>`;
+      }).join('')}
+      <div class="meal"><time>весь день</time><div>Хлеб, салат из капусты с морковью</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPrices(){
+  document.getElementById('prices').innerHTML = Object.entries(P).map(([k,v]) => `
+    <tr><td>${v.n}</td><td>${v.where}</td>
+    <td><input type="number" step="0.01" min="0" data-p="${k}" value="${v.p}" aria-label="Цена: ${v.n}">
+    <span style="color:var(--muted);font-size:12.5px">₽/${v.u}</span></td></tr>`).join('');
+}
+
+function renderCustom(){
+  document.getElementById('mine').innerHTML = custom.length
+    ? custom.map(c => `<tr><td>${c.name}${c.where ? `<span class="where">${c.where}</span>` : ''}</td>
+        <td class="mono">${c.qty} ${c.unit}</td>
+        <td><span class="mono">${rub(c.qty * c.price)}</span>
+        <button class="del" data-del="${c.id}">убрать</button></td></tr>`).join('')
+    : '<tr><td colspan="3" style="color:var(--muted);font-size:14px">Пока пусто. Добавь что-нибудь ниже.</td></tr>';
+}
+
+/* ---------- события ---------- */
+function hit(sel, fn){
+  document.addEventListener('click', e => { const t = e.target.closest(sel); if (t) fn(t); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const t = e.target.closest(sel); if (t){ e.preventDefault(); fn(t); }
+  });
+}
+hit('.row', r => {
+  const k = r.dataset.k;
+  checked.has(k) ? checked.delete(k) : checked.add(k);
+  store.set('checked', JSON.stringify([...checked]));
+  render();
+});
+hit('.pick', p => {
+  const k = p.dataset.d;
+  onM.has(k) ? onM.delete(k) : onM.add(k);
+  store.set('onM', JSON.stringify([...onM]));
+  render();
+});
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pickset]'); if (!b) return;
+  const mode = b.dataset.pickset;
+  const byPrice = Object.keys(M).sort((a,b2) => dishNorm(M[a].ing) - dishNorm(M[b2].ing));
+  if (mode === 'all')  onM = new Set(Object.keys(M));
+  if (mode === 'none') onM = new Set();
+  if (mode === 'cheap8')  onM = new Set(byPrice.slice(0, 8));
+  if (mode === 'cheap14') onM = new Set(byPrice.slice(0, 14));
+  store.set('onM', JSON.stringify([...onM]));
+  render();
+});
+
+document.getElementById('prices').addEventListener('input', e => {
+  const k = e.target.dataset.p; if (!k) return;
+  const v = parseFloat(e.target.value); if (isNaN(v) || v < 0) return;
+  P[k].p = v; store.set('price_' + k, v); render(); say('said2','Цена сохранена');
+});
+
+document.getElementById('c-add').addEventListener('click', () => {
+  const name = document.getElementById('c-name').value.trim();
+  const qty = parseFloat(document.getElementById('c-qty').value);
+  const price = parseFloat(document.getElementById('c-price').value);
+  if (!name){ say('said2','Впиши название'); return; }
+  if (isNaN(qty) || qty <= 0){ say('said2','Укажи количество больше нуля'); return; }
+  if (isNaN(price) || price < 0){ say('said2','Укажи цену'); return; }
+  custom.push({id:Date.now().toString(36), name, qty, price,
+    unit:document.getElementById('c-unit').value,
+    where:document.getElementById('c-where').value.trim()});
+  store.set('custom', JSON.stringify(custom));
+  ['c-name','c-price','c-where'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('c-qty').value = 1;
+  renderCustom(); render(); say('said2','Добавлено в список');
+});
+
+document.getElementById('mine').addEventListener('click', e => {
+  const id = e.target.dataset.del; if (!id) return;
+  custom = custom.filter(c => c.id !== id);
+  store.set('custom', JSON.stringify(custom));
+  renderCustom(); render();
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  Object.entries(BASE).forEach(([k,v]) => { P[k].p = v; store.del('price_' + k); });
+  renderPrices(); render(); say('said2','Вернул цены Росстата');
+});
+document.getElementById('uncheck').addEventListener('click', () => {
+  checked.clear(); store.set('checked','[]'); render();
+});
+document.getElementById('copy').addEventListener('click', async () => {
+  const txt = `Закупка на ${cur.days} дней\n\n` + GROUPS.map(g => {
+    const rows = cur.items.filter(i => i.group === g);
+    return rows.length ? g + '\n' + rows.map(i => `  ${i.name} — ${amt(i)} — ${rub(i.cost)}`).join('\n') : '';
+  }).filter(Boolean).join('\n\n') + `\n\nИтого ${rub(cur.items.reduce((s,i) => s + i.cost, 0))}`;
+  try { await navigator.clipboard.writeText(txt); say('said1','Список скопирован'); }
+  catch(e){ say('said1','Скопировать не вышло — выдели список вручную'); }
+});
+
+function say(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg; clearTimeout(el._t);
+  el._t = setTimeout(() => el.textContent = '', 2500);
+}
+
+['days','goal','extra','split'].forEach(id => {
+  const v = store.get('cfg_' + id);
+  if (v !== null) document.getElementById(id).value = v;
+  document.getElementById(id).addEventListener('input', () => {
+    store.set('cfg_' + id, document.getElementById(id).value); render();
+  });
+});
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('section').forEach(s => s.hidden = s.id !== b.dataset.tab);
+}));
+
+renderPrices(); renderCustom(); render();
+</script>
+</body>
+</html>
