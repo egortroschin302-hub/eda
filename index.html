@@ -2,7 +2,12 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E9EBE4">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Кухня">
 <title>Кухня на 10 дней</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,6 +204,16 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
   <div><button class="act" id="fit">Подобрать блюда под бюджет</button></div>
   <div id="fitres"></div></div>
 
+  <h2>Сохранение</h2>
+  <div id="saveinfo"></div>
+  <div class="actions" style="margin-top:12px">
+    <button class="act ghost" id="exp">Скачать копию</button>
+    <button class="act ghost" id="imp">Загрузить из файла</button>
+    <button class="act ghost" id="wipe">Сбросить всё</button>
+  </div>
+  <input type="file" id="impfile" accept="application/json,.json" style="display:none">
+  <div id="savedres"></div>
+
   <h2>Аллергия и что не ем</h2>
   <p class="note">Отметь продукты, которые не подходят. Блюда с ними исчезнут из ротации, а те, что уже выбраны, снимутся автоматически.</p>
   <div class="chips" id="excl"></div>
@@ -277,7 +292,9 @@ const store = (() => {
   return {
     get:k=>{ try { return ok ? localStorage.getItem(k) : (mem[k] ?? null); } catch(e){ return mem[k] ?? null; } },
     set:(k,v)=>{ try { ok ? localStorage.setItem(k,v) : (mem[k]=v); } catch(e){ mem[k]=v; } },
-    del:k=>{ try { ok ? localStorage.removeItem(k) : delete mem[k]; } catch(e){ delete mem[k]; } }
+    del:k=>{ try { ok ? localStorage.removeItem(k) : delete mem[k]; } catch(e){ delete mem[k]; } },
+    keys(){ try { return ok ? Object.keys(localStorage) : Object.keys(mem); } catch(e){ return Object.keys(mem); } },
+    works: ok
   };
 })();
 
@@ -730,7 +747,7 @@ function render(){
         </div>`).join('');
     }).join('');
   }
-  renderPicks(); renderCook(); renderMenu(); renderProfile(); renderPrices();
+  renderPicks(); renderCook(); renderMenu(); renderProfile(); renderPrices(); renderSave();
 }
 
 function renderPicks(){
@@ -860,6 +877,14 @@ function renderMenu(){
       <div class="meal"><time>весь день</time><div>Хлеб, салат из капусты с морковью</div></div>
     </div>`;
   }).join('');
+}
+
+function renderSave(){
+  const n = store.keys().length;
+  document.getElementById('saveinfo').innerHTML = store.works
+    ? `<div class="res"><b>Данные сохраняются в этом браузере</b>Записей: ${n}. Цены, размеры упаковок, выбранные блюда, анкета, бюджет и отметки в магазине держатся между заходами.
+       На телефоне лучше добавить страницу на главный экран: iOS удаляет данные сайтов, которые не открывали неделю, а у приложения с иконкой такого не происходит. Копию всё равно стоит скачать — она переносится на другое устройство.</div>`
+    : `<div class="res dup"><b>Браузер не даёт сохранять</b>Скорее всего открыто в режиме инкогнито или запрещены данные сайтов. Настройки будут жить только до закрытия вкладки. Скачай копию, если не хочешь вводить всё заново.</div>`;
 }
 
 function renderProfile(){
@@ -1197,6 +1222,49 @@ document.getElementById('mine').addEventListener('click', e => {
   store.set('custom', JSON.stringify(custom));
   renderCustom(); render();
 if (budget) fitBudget(true);
+});
+
+document.getElementById('exp').addEventListener('click', () => {
+  const dump = {};
+  store.keys().forEach(k => dump[k] = store.get(k));
+  const blob = new Blob([JSON.stringify(dump, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kuhnya-nastroyki.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  document.getElementById('savedres').innerHTML = '<div class="res"><b>Копия скачана</b>Файл kuhnya-nastroyki.json. Загрузить его можно на любом устройстве кнопкой рядом.</div>';
+});
+
+document.getElementById('imp').addEventListener('click', () => document.getElementById('impfile').click());
+document.getElementById('impfile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const dump = JSON.parse(r.result);
+      if (typeof dump !== 'object' || !dump) throw 0;
+      Object.entries(dump).forEach(([k,v]) => store.set(k, v));
+      document.getElementById('savedres').innerHTML = '<div class="res"><b>Настройки загружены</b>Перезагружаю страницу…</div>';
+      setTimeout(() => location.reload(), 700);
+    } catch(err){
+      document.getElementById('savedres').innerHTML = '<div class="res dup"><b>Файл не подошёл</b>Нужен именно kuhnya-nastroyki.json, скачанный этим же приложением.</div>';
+    }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+document.getElementById('wipe').addEventListener('click', e => {
+  const b = e.target;
+  if (b.dataset.sure !== '1'){
+    b.dataset.sure = '1';
+    b.textContent = 'Точно сбросить?';
+    setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Сбросить всё'; }, 4000);
+    return;
+  }
+  store.keys().forEach(k => store.del(k));
+  location.reload();
 });
 
 document.getElementById('reset').addEventListener('click', () => {
