@@ -148,6 +148,7 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
     </div>
     <div class="bar"><span id="barfill"></span></div>
     <div class="bar-label" id="barlabel">Куплено 0 из 0 позиций</div>
+    <div class="bar-label" id="budgetline"></div>
   </div>
   <div class="knobs">
     <div class="knob"><label for="days">Дней</label><input id="days" type="number" min="3" max="21" value="10"></div>
@@ -232,8 +233,11 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
 </section>
 
 <section id="price" hidden>
-  <p class="note">Стартовые цены — средние по России, Росстат на 24.08.2026. Правь по своим чекам, всё пересчитается сразу.</p>
-  <table><thead><tr><th>Продукт</th><th>Где брать</th><th>Цена</th></tr></thead><tbody id="prices"></tbody></table>
+  <p class="note">Количество и сумма — под тот набор блюд, который сейчас в ротации. Цены правь по своим чекам, всё пересчитается сразу.</p>
+  <div class="chips" style="margin-bottom:12px">
+    <button class="chip on" id="only-used">Только используемые</button>
+  </div>
+  <table><thead><tr><th>Продукт</th><th>Нужно</th><th>Цена</th></tr></thead><tbody id="prices"></tbody></table>
 
   <h2>Свои продукты</h2>
   <p class="note">Всё, что покупаешь помимо готовки: кофе, сладкое, бытовая химия. Попадёт в список отдельной строкой и в общую сумму.</p>
@@ -594,6 +598,8 @@ const gram = (k, q) => P[k].u === 'шт'
   ? (Math.round(q * 10) / 10) + ' шт'
   : q >= 1 ? (Math.round(q * 100) / 100) + ' ' + P[k].u : Math.round(q * 1000) + (P[k].u === 'л' ? ' мл' : ' г');
 let open1 = null;
+let onlyUsed = store.get('onlyUsed') !== '0';
+let budgetNote = '';
 const rub = v => Math.round(v).toLocaleString('ru-RU') + ' ₽';
 const amt = i => i.unit === 'шт' ? i.qty + ' шт' : (i.qty % 1 === 0 ? i.qty : +i.qty.toFixed(2)) + ' ' + i.unit;
 
@@ -658,6 +664,12 @@ function render(){
   document.getElementById('foot-sum').textContent = rub(total);
   document.getElementById('barfill').style.width = (items.length ? done/items.length*100 : 0) + '%';
   document.getElementById('barlabel').textContent = `Куплено ${done} из ${items.length} позиций`;
+  const bl = document.getElementById('budgetline');
+  if (budget > 0 && !cur.empty){
+    const week = total / days * 7;
+    const fit = week <= budget;
+    bl.innerHTML = `Бюджет ${budget.toLocaleString('ru-RU')} ₽ в неделю — <span style="color:${fit ? 'var(--ok)' : 'var(--beet)'};font-weight:700">${fit ? 'выходит ' + rub(week) + ', укладываешься' : 'выходит ' + rub(week) + ', перебор на ' + rub(week - budget)}</span> · блюд в ротации: ${[...onM].filter(k => M[k] && !blocked(M[k].ing).length).length}${budgetNote ? '<br>' + budgetNote : ''}`;
+  } else bl.innerHTML = '';
 
   const list = document.getElementById('list');
   if (cur.empty){
@@ -675,7 +687,7 @@ function render(){
         </div>`).join('');
     }).join('');
   }
-  renderPicks(); renderCook(); renderMenu(); renderProfile();
+  renderPicks(); renderCook(); renderMenu(); renderProfile(); renderPrices();
 }
 
 function renderPicks(){
@@ -783,7 +795,18 @@ function renderMenu(){
   const out = document.getElementById('days-out');
   if (cur.empty){ out.innerHTML = ''; return; }
   const size = f => f > 1.25 ? 'большая порция' : f < .85 ? 'малая порция' : '';
-  out.innerHTML = cur.menu.map((row, d) => {
+  const tally = {};
+  cur.menu.flat().forEach(m => tally[m.id] = (tally[m.id] || 0) + 1);
+  const dayCost = cur.items.reduce((s,i) => s + i.cost, 0) / cur.days;
+  out.innerHTML = `<div class="day">
+    <div class="day-h"><b>В ротации ${Object.keys(tally).length} ${Object.keys(tally).length < 5 ? 'блюда' : 'блюд'}</b>
+      <span>${rub(dayCost)} в день · ${rub(dayCost * 7)} в неделю</span></div>
+    ${Object.entries(tally).sort((a,b) => b[1] - a[1]).map(([id,n]) => {
+      const b = scaled(M[id].ing, BIG);
+      return `<div class="meal"><time>${n}×</time><div>${M[id].n}
+        <span style="color:var(--muted)">· ${rub(b.cost)} за большую порцию</span></div></div>`;
+    }).join('')}
+  </div>` + cur.menu.map((row, d) => {
     const meals = [['12:00', row[0]], ['14:30', row[1]], ['20:30', row[2]]];
     return `<div class="day">
       <div class="day-h"><b>День ${d+1}</b><span>${d < Math.min(4, cur.days) ? 'из холодильника' : 'из морозилки, достать накануне'}</span></div>
@@ -837,10 +860,19 @@ function renderProfile(){
 }
 
 function renderPrices(){
-  document.getElementById('prices').innerHTML = Object.entries(P).map(([k,v]) => `
-    <tr><td>${v.n}</td><td>${v.where}</td>
-    <td><input type="number" step="0.01" min="0" data-p="${k}" value="${v.p}" aria-label="Цена: ${v.n}">
-    <span style="color:var(--muted);font-size:12.5px">₽/${v.u}</span></td></tr>`).join('');
+  const used = {};
+  if (cur && !cur.empty) cur.items.forEach(i => { if (P[i.k]) used[i.k] = i; });
+  const rows = Object.entries(P).filter(([k]) => !onlyUsed || used[k]);
+  document.getElementById('prices').innerHTML = rows.map(([k,v]) => {
+    const u = used[k];
+    return `<tr${u ? '' : ' style="opacity:.5"'}>
+      <td>${v.n}<span class="where">${v.where}</span></td>
+      <td class="mono" style="text-align:right;white-space:nowrap">${u ? amt(u) + '<span class="where">' + rub(u.cost) + '</span>' : '—'}</td>
+      <td><input type="number" step="0.01" min="0" data-p="${k}" value="${v.p}" aria-label="Цена: ${v.n}">
+      <span style="color:var(--muted);font-size:12.5px">₽/${v.u}</span></td></tr>`;
+  }).join('') + (rows.length ? '' : '<tr><td colspan="3" style="color:var(--muted)">Ни одного блюда не выбрано.</td></tr>');
+  document.getElementById('only-used').classList.toggle('on', onlyUsed);
+  document.getElementById('only-used').textContent = onlyUsed ? 'Только используемые' : 'Показаны все продукты';
 }
 
 function renderCustom(){
@@ -903,36 +935,40 @@ document.getElementById('eaters').addEventListener('input', e => {
   }
   eaters[i][f] = v;
   store.set('eaters', JSON.stringify(eaters));
-  render();
+  render(); maybeFit();
 });
 document.getElementById('eaters').addEventListener('click', e => {
   const i = e.target.dataset.rm; if (i === undefined) return;
   eaters.splice(+i, 1);
   store.set('eaters', JSON.stringify(eaters));
-  render();
+  render(); maybeFit();
 });
 document.getElementById('add-eater').addEventListener('click', () => {
   eaters.push({sex:'m', age:30, h:175, w:70, act:1.375, goal:'hold'});
   store.set('eaters', JSON.stringify(eaters));
-  render();
+  render(); maybeFit();
 });
 
 // бюджет
 const bEl = document.getElementById('budget');
 if (budget) bEl.value = budget;
+let bTimer;
+function maybeFit(){ clearTimeout(bTimer); bTimer = setTimeout(() => { if (budget) fitBudget(true); }, 500); }
 bEl.addEventListener('input', () => {
   budget = parseFloat(bEl.value) || 0;
   store.set('budget', budget);
   renderProfile();
+  maybeFit();
 });
 
 // подбор под бюджет
-document.getElementById('fit').addEventListener('click', () => {
+function fitBudget(silent){
   const box = document.getElementById('fitres');
-  if (!budget){ box.innerHTML = '<div class="res dup">Сначала впиши бюджет на неделю.</div>'; return; }
+  if (!budget){ if (!silent) box.innerHTML = '<div class="res dup">Сначала впиши бюджет на неделю.</div>'; return; }
   const avail = Object.keys(M).filter(k => !blocked(M[k].ing).length)
     .sort((a,b) => dishNorm(M[a].ing) - dishNorm(M[b].ing));
   if (avail.length < 3){ box.innerHTML = '<div class="res dup">Слишком много продуктов исключено — блюд почти не осталось.</div>'; return; }
+  const keep = new Set(onM);
   let best = null;
   for (let n = avail.length; n >= 3; n--){
     onM = new Set(avail.slice(0, n));
@@ -941,12 +977,18 @@ document.getElementById('fit').addEventListener('click', () => {
     if (week <= budget){ best = {n, week}; break; }
     if (n === 3) best = {n, week, fail:true};
   }
+  budgetNote = best.fail
+    ? `Минимум при этих настройках — ${rub(best.week)} в неделю, ниже не опускается`
+    : '';
+  if (best.fail && silent && keep.size > 3) onM = new Set(avail.slice(0, 3));
   store.set('onM', JSON.stringify([...onM]));
   render();
+  if (!best.fail && !silent) goTab('menu');
   box.innerHTML = best.fail
     ? `<div class="res dup"><b>В бюджет не уложиться</b>Даже на трёх самых дешёвых блюдах выходит ${rub(best.week)} в неделю. Норма ${totalNorm().kcal} ккал в день столько и стоит — резать дальше можно только за счёт белка, а это плохой размен. Реалистичный минимум примерно ${rub(best.week)}.</div>`
-    : `<div class="res"><b>Подобрал ${best.n} ${best.n < 5 ? 'блюда' : 'блюд'}</b>Выходит ${rub(best.week)} в неделю — укладывается в ${rub(budget)}. Список покупок и меню пересчитаны.</div>`;
-});
+    : `<div class="res"><b>Подобрал ${best.n} ${best.n < 5 ? 'блюда' : 'блюд'}</b>Выходит ${rub(best.week)} в неделю — укладывается в ${rub(budget)}. Список покупок, меню и рецепты пересчитаны.</div>`;
+}
+document.getElementById('fit').addEventListener('click', () => fitBudget(false));
 
 // аллергия и нелюбимое
 document.getElementById('excl').addEventListener('click', e => {
@@ -955,13 +997,13 @@ document.getElementById('excl').addEventListener('click', e => {
   store.set('exclude', JSON.stringify([...exclude]));
   [...onM].forEach(d => { if (M[d] && blocked(M[d].ing).length) onM.delete(d); });
   store.set('onM', JSON.stringify([...onM]));
-  render();
+  render(); maybeFit();
 });
 
 document.getElementById('prices').addEventListener('input', e => {
   const k = e.target.dataset.p; if (!k) return;
   const v = parseFloat(e.target.value); if (isNaN(v) || v < 0) return;
-  P[k].p = v; store.set('price_' + k, v); render(); say('said2','Цена сохранена');
+  P[k].p = v; store.set('price_' + k, v); render(); maybeFit(); say('said2','Цена сохранена');
 });
 
 const norm = t => t.toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9 ]/gi,' ').replace(/\s+/g,' ').trim();
@@ -1059,6 +1101,12 @@ document.getElementById('mine').addEventListener('click', e => {
   renderCustom(); render();
 });
 
+document.getElementById('only-used').addEventListener('click', () => {
+  onlyUsed = !onlyUsed;
+  store.set('onlyUsed', onlyUsed ? '1' : '0');
+  renderPrices();
+});
+
 document.getElementById('reset').addEventListener('click', () => {
   Object.entries(BASE).forEach(([k,v]) => { P[k].p = v; store.del('price_' + k); });
   renderPrices(); render(); say('said2','Вернул цены Росстата');
@@ -1085,15 +1133,17 @@ function say(id, msg){
   const v = store.get('cfg_' + id);
   if (v !== null) document.getElementById(id).value = v;
   document.getElementById(id).addEventListener('input', () => {
-    store.set('cfg_' + id, document.getElementById(id).value); render();
+    store.set('cfg_' + id, document.getElementById(id).value); render(); maybeFit();
   });
 });
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-selected', x === b));
-  document.querySelectorAll('section').forEach(s => s.hidden = s.id !== b.dataset.tab);
-}));
+function goTab(id){
+  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === id));
+  document.querySelectorAll('section').forEach(s => s.hidden = s.id !== id);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => goTab(b.dataset.tab)));
 
-renderPrices(); renderCustom(); render();
+renderCustom(); render();
 </script>
 </body>
 </html>
