@@ -151,7 +151,16 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
     <div class="bar-label" id="budgetline"></div>
   </div>
   <div class="knobs">
-    <div class="knob"><label for="days">Дней</label><input id="days" type="number" min="3" max="21" value="10"></div>
+    <div class="knob"><label for="days">Цикл</label>
+      <select id="days">
+        <option value="auto" selected>Авто</option>
+        <option value="5">5 дней</option>
+        <option value="7">7 дней</option>
+        <option value="10">10 дней</option>
+        <option value="14">14 дней</option>
+        <option value="21">21 день</option>
+      </select>
+    </div>
     <div class="knob"><label for="split">Плотнее</label>
       <select id="split">
         <option value="12">В 12:00</option>
@@ -207,12 +216,13 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
 </section>
 
 <section id="dish" hidden>
-  <p class="note">Один список на все три приёма — каждое блюдо может попасть и в 12:00, и в 14:30, и на ужин. Отметь то, что готов есть; чем больше выбрано, тем реже повторяется. Цена приведена к одинаковой калорийности, чтобы блюда честно сравнивались между собой.</p>
+  <p class="note">Отмечай только то, что точно хочешь или точно не будешь — такие блюда закрепляются и подбор их не трогает. Остальные приложение добавляет и убирает само, подгоняя под бюджет. Цена приведена к одинаковой калорийности, чтобы блюда сравнивались честно.</p>
   <div class="actions" style="margin:0 0 8px">
     <button class="act ghost" data-pickset="cheap8">8 самых дешёвых</button>
     <button class="act ghost" data-pickset="cheap14">14 дешёвых</button>
     <button class="act ghost" data-pickset="all">Выбрать все</button>
     <button class="act ghost" data-pickset="none">Снять все</button>
+    <button class="act ghost" data-pickset="free">Сбросить ручной выбор</button>
   </div>
   <div id="warn"></div>
   <div id="pick-m"></div>
@@ -600,12 +610,18 @@ const gram = (k, q) => P[k].u === 'шт'
 let open1 = null;
 let onlyUsed = store.get('onlyUsed') !== '0';
 let budgetNote = '';
+let autoDays = 10;
+let pin = JSON.parse(store.get('pin') || '{}');   // true — держать всегда, false — не предлагать
+const curDays = () => {
+  const v = document.getElementById('days').value;
+  return v === 'auto' ? autoDays : Math.max(3, Math.min(21, +v || 10));
+};
 const rub = v => Math.round(v).toLocaleString('ru-RU') + ' ₽';
 const amt = i => i.unit === 'шт' ? i.qty + ' шт' : (i.qty % 1 === 0 ? i.qty : +i.qty.toFixed(2)) + ' ' + i.unit;
 
 /* ---------- расчёт ---------- */
 function plan(){
-  const days = Math.max(3, Math.min(21, parseInt(document.getElementById('days').value) || 10));
+  const days = curDays();
   const extra = parseFloat(document.getElementById('extra').value);
   const share = SHARE[document.getElementById('split').value] || SHARE.even;
   const N = totalNorm();
@@ -668,7 +684,7 @@ function render(){
   if (budget > 0 && !cur.empty){
     const week = total / days * 7;
     const fit = week <= budget;
-    bl.innerHTML = `Бюджет ${budget.toLocaleString('ru-RU')} ₽ в неделю — <span style="color:${fit ? 'var(--ok)' : 'var(--beet)'};font-weight:700">${fit ? 'выходит ' + rub(week) + ', укладываешься' : 'выходит ' + rub(week) + ', перебор на ' + rub(week - budget)}</span> · блюд в ротации: ${[...onM].filter(k => M[k] && !blocked(M[k].ing).length).length}${budgetNote ? '<br>' + budgetNote : ''}`;
+    bl.innerHTML = `Бюджет ${budget.toLocaleString('ru-RU')} ₽ в неделю — <span style="color:${fit ? 'var(--ok)' : 'var(--beet)'};font-weight:700">${fit ? 'выходит ' + rub(week) + ', укладываешься' : 'выходит ' + rub(week) + ', перебор на ' + rub(week - budget)}</span> · цикл ${days} дней · блюд ${[...onM].filter(k => M[k] && !blocked(M[k].ing).length).length}${budgetNote ? '<br>' + budgetNote : ''}`;
   } else bl.innerHTML = '';
 
   const list = document.getElementById('list');
@@ -704,7 +720,7 @@ function renderPicks(){
         <div class="pick ${on ? 'on' : 'off'}" data-d="${k}">
           <span class="box pick-box" data-toggle="${k}" role="checkbox" aria-checked="${on}" tabindex="0">✓</span>
           <span class="pick-open" data-open="${k}" role="button" tabindex="0">
-            <span class="nm"><b>${v.n}</b><small>${v.d}</small></span>
+            <span class="nm"><b>${v.n}</b><small>${pin[k] === true ? 'закреплено вручную · ' : pin[k] === false ? 'убрано вручную · ' : ''}${v.d}</small></span>
             <span class="cost mono">${rub(dishNorm(v.ing))}</span>
             <span class="chev">${open1 === k ? '▲' : '▼'}</span>
           </span>
@@ -900,9 +916,14 @@ hit('.row', r => {
 });
 hit('[data-toggle]', el => {
   const k = el.dataset.toggle;
-  onM.has(k) ? onM.delete(k) : onM.add(k);
-  store.set('onM', JSON.stringify([...onM]));
-  render();
+  pin[k] = !onM.has(k);          // включил — держать всегда, выключил — не предлагать
+  store.set('pin', JSON.stringify(pin));
+  if (budget) fitBudget(true);
+  else {
+    onM.has(k) ? onM.delete(k) : onM.add(k);
+    store.set('onM', JSON.stringify([...onM]));
+    render();
+  }
 });
 hit('[data-open]', el => {
   const k = el.dataset.open;
@@ -918,8 +939,10 @@ document.addEventListener('click', e => {
   if (mode === 'none') onM = new Set();
   if (mode === 'cheap8')  onM = new Set(byPrice.slice(0, 8));
   if (mode === 'cheap14') onM = new Set(byPrice.slice(0, 14));
+  if (mode === 'free'){ pin = {}; store.set('pin', '{}'); }
+  else { pin = {}; [...onM].forEach(k => pin[k] = true); store.set('pin', JSON.stringify(pin)); }
   store.set('onM', JSON.stringify([...onM]));
-  render();
+  if (budget) fitBudget(true); else render();
 });
 
 // анкета
@@ -962,31 +985,61 @@ bEl.addEventListener('input', () => {
 });
 
 // подбор под бюджет
+function weekCost(){
+  const p = plan();
+  if (p.empty) return Infinity;
+  return p.items.reduce((s,i) => s + i.cost, 0) / p.days * 7;
+}
+
+// подбирает набор блюд под бюджет, не трогая закреплённое вручную
+function packFor(){
+  const ok = k => M[k] && !blocked(M[k].ing).length;
+  const must = Object.keys(pin).filter(k => pin[k] === true && ok(k));
+  const pool = Object.keys(M).filter(k => ok(k) && pin[k] !== true && pin[k] !== false)
+    .sort((a,b) => dishNorm(M[a].ing) - dishNorm(M[b].ing));
+  const apply = n => { onM = new Set([...must, ...pool.slice(0, n)]); };
+  if (!must.length && !pool.length) return {n:0, week:Infinity, fail:true};
+
+  for (let n = pool.length; n >= 0; n--){
+    apply(n);
+    if (onM.size < 3 && pool.length >= 3 - must.length) continue;   // меньше трёх нельзя
+    if (!budget) return {n:onM.size, week:weekCost()};
+    const w = weekCost();
+    if (w <= budget) return {n:onM.size, week:w};
+  }
+  apply(Math.max(0, 3 - must.length));
+  return {n:onM.size, week:weekCost(), fail:true};
+}
+
 function fitBudget(silent){
   const box = document.getElementById('fitres');
-  if (!budget){ if (!silent) box.innerHTML = '<div class="res dup">Сначала впиши бюджет на неделю.</div>'; return; }
-  const avail = Object.keys(M).filter(k => !blocked(M[k].ing).length)
-    .sort((a,b) => dishNorm(M[a].ing) - dishNorm(M[b].ing));
-  if (avail.length < 3){ box.innerHTML = '<div class="res dup">Слишком много продуктов исключено — блюд почти не осталось.</div>'; return; }
-  const keep = new Set(onM);
+  const auto = document.getElementById('days').value === 'auto';
   let best = null;
-  for (let n = avail.length; n >= 3; n--){
-    onM = new Set(avail.slice(0, n));
-    const p = plan();
-    const week = p.items.reduce((s,i) => s + i.cost, 0) / p.days * 7;
-    if (week <= budget){ best = {n, week}; break; }
-    if (n === 3) best = {n, week, fail:true};
+
+  if (auto){
+    // ищем длину цикла, при которой в бюджет влезает больше блюд
+    for (const d of [7, 10, 12, 14]){   // дальше не идём: 14 дней — это уже 42 контейнера
+      autoDays = d;
+      const r = packFor();
+      if (!best || (!r.fail && (best.fail || r.n > best.n))) best = Object.assign({}, r, {days:d, set:new Set(onM)});   // список идёт от коротких, при равенстве остаётся первый
+    }
+    autoDays = best.days;
+    onM = best.set;
+  } else {
+    best = packFor();
+    best.days = curDays();
   }
-  budgetNote = best.fail
-    ? `Минимум при этих настройках — ${rub(best.week)} в неделю, ниже не опускается`
+
+  budgetNote = best.fail && budget
+    ? `Минимум при этих настройках — ${rub(best.week)} в неделю, дешевле не выходит`
     : '';
-  if (best.fail && silent && keep.size > 3) onM = new Set(avail.slice(0, 3));
   store.set('onM', JSON.stringify([...onM]));
   render();
-  if (!best.fail && !silent) goTab('menu');
+  if (silent) return;
+  if (!best.fail) goTab('menu');
   box.innerHTML = best.fail
-    ? `<div class="res dup"><b>В бюджет не уложиться</b>Даже на трёх самых дешёвых блюдах выходит ${rub(best.week)} в неделю. Норма ${totalNorm().kcal} ккал в день столько и стоит — резать дальше можно только за счёт белка, а это плохой размен. Реалистичный минимум примерно ${rub(best.week)}.</div>`
-    : `<div class="res"><b>Подобрал ${best.n} ${best.n < 5 ? 'блюда' : 'блюд'}</b>Выходит ${rub(best.week)} в неделю — укладывается в ${rub(budget)}. Список покупок, меню и рецепты пересчитаны.</div>`;
+    ? `<div class="res dup"><b>В бюджет не уложиться</b>Минимальный набор при цикле ${best.days} дней стоит ${rub(best.week)} в неделю. Норма ${totalNorm().kcal} ккал столько и стоит — резать дальше можно только за счёт белка.</div>`
+    : `<div class="res"><b>Готово: ${best.n} ${best.n < 5 ? 'блюда' : 'блюд'}, цикл ${best.days} дней</b>Выходит ${rub(best.week)} в неделю${budget ? ' — укладывается в ' + rub(budget) : ''}. Закупка, меню и рецепты пересчитаны.</div>`;
 }
 document.getElementById('fit').addEventListener('click', () => fitBudget(false));
 
@@ -1083,6 +1136,7 @@ document.getElementById('c-add').addEventListener('click', () => {
   ['c-name','c-price','c-where'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('c-qty').value = 1;
   renderCustom(); render();
+if (budget) fitBudget(true);
   box.innerHTML = `<div class="res"><b>Добавлено в список</b>${name} — блюд с этим продуктом в каталоге нет, так что он просто попадёт в закупку отдельной строкой.</div>`;
 });
 
@@ -1099,6 +1153,7 @@ document.getElementById('mine').addEventListener('click', e => {
   custom = custom.filter(c => c.id !== id);
   store.set('custom', JSON.stringify(custom));
   renderCustom(); render();
+if (budget) fitBudget(true);
 });
 
 document.getElementById('only-used').addEventListener('click', () => {
@@ -1144,6 +1199,7 @@ function goTab(id){
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => goTab(b.dataset.tab)));
 
 renderCustom(); render();
+if (budget) fitBudget(true);
 </script>
 </body>
 </html>
