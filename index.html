@@ -243,11 +243,8 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-si
 </section>
 
 <section id="price" hidden>
-  <p class="note">Количество и сумма — под тот набор блюд, который сейчас в ротации. Цены правь по своим чекам, всё пересчитается сразу.</p>
-  <div class="chips" style="margin-bottom:12px">
-    <button class="chip on" id="only-used">Только используемые</button>
-  </div>
-  <table><thead><tr><th>Продукт</th><th>Нужно</th><th>Цена</th></tr></thead><tbody id="prices"></tbody></table>
+  <p class="note">Справочник продуктов. Размер упаковки и цену меняй под свой магазин — количества в закупке и стоимость блюд пересчитаются сразу. У весовых товаров упаковки нет, цена за килограмм.</p>
+  <table><thead><tr><th>Продукт</th><th>Упаковка</th><th>Цена</th></tr></thead><tbody id="prices"></tbody></table>
 
   <h2>Свои продукты</h2>
   <p class="note">Всё, что покупаешь помимо готовки: кофе, сладкое, бытовая химия. Попадёт в список отдельной строкой и в общую сумму.</p>
@@ -294,31 +291,31 @@ const P = {
   svinina:  {n:'Свинина, лопатка', u:'кг', p:402.91, step:0.5, where:'Пятёрочка, по акции', g:'Мясо', kcal:2570, prot:160, fat:210, carb:0},
   farsh:    {n:'Фарш свино-куриный', u:'кг', p:380, step:0.5, where:'Пятёрочка, Магнит', g:'Мясо', kcal:2200, prot:160, fat:170, carb:0},
   farsh_k:  {n:'Фарш куриный', u:'кг', p:290, step:0.5, where:'Пятёрочка, Магнит', g:'Мясо', kcal:1430, prot:170, fat:80, carb:0},
-  tushenka: {n:'Тушёнка говяжья', u:'кг', p:440, step:0.34, where:'Светофор, Магнит', g:'Мясо', kcal:2200, prot:150, fat:180, carb:0},
+  tushenka: {n:'Тушёнка говяжья', u:'кг', p:440, step:0.325, pack:{l:['банка','банки','банок'], s:0.325},  where:'Светофор, Магнит', g:'Мясо', kcal:2200, prot:150, fat:180, carb:0},
   seld:     {n:'Сельдь солёная', u:'кг', p:280, step:0.5, where:'Пятёрочка, Магнит', g:'Мясо', kcal:2170, prot:170, fat:165, carb:0},
-  sosiski:  {n:'Сосиски', u:'кг', p:550.42, step:0.4, where:'Пятёрочка, по акции', g:'Мясо', kcal:2660, prot:110, fat:240, carb:20},
-  grechka:  {n:'Гречка', u:'кг', p:86.52, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3080, prot:126, fat:33, carb:620},
-  ris:      {n:'Рис', u:'кг', p:124.37, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3330, prot:70, fat:10, carb:780},
-  perlovka: {n:'Перловка', u:'кг', p:70, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3200, prot:90, fat:12, carb:670},
-  psheno:   {n:'Пшено', u:'кг', p:66.77, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3480, prot:110, fat:33, carb:690},
-  yachka:   {n:'Ячневая крупа', u:'кг', p:60, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3130, prot:100, fat:13, carb:660},
-  kukur_kr: {n:'Кукурузная крупа', u:'кг', p:80, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3280, prot:80, fat:12, carb:710},
-  bulgur:   {n:'Булгур', u:'кг', p:150, step:0.8, where:'Лента, Магнит', g:'Крупы и бакалея', kcal:3420, prot:120, fat:13, carb:760},
-  goroh:    {n:'Горох колотый', u:'кг', p:90, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3000, prot:200, fat:20, carb:500},
-  chechev:  {n:'Чечевица', u:'кг', p:150, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3000, prot:240, fat:15, carb:460},
-  fasol_s:  {n:'Фасоль сухая', u:'кг', p:140, step:0.8, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:2980, prot:210, fat:20, carb:470},
-  makaron:  {n:'Макароны', u:'кг', p:122.72, step:0.9, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3400, prot:120, fat:13, carb:700},
-  vermish:  {n:'Вермишель', u:'кг', p:120.89, step:0.9, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3400, prot:110, fat:13, carb:710},
-  muka:     {n:'Мука', u:'кг', p:56.7, step:1, where:'любой', g:'Крупы и бакалея', kcal:3420, prot:100, fat:12, carb:740},
-  fasol:    {n:'Фасоль консервированная', u:'кг', p:325, step:0.4, where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:1000, prot:65, fat:5, carb:170},
-  gorosh_k: {n:'Горошек консервированный', u:'кг', p:180, step:0.4, where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:550, prot:35, fat:2, carb:95},
-  kukur_k:  {n:'Кукуруза консервированная', u:'кг', p:200, step:0.4, where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:580, prot:22, fat:13, carb:110},
-  pasta_t:  {n:'Томатная паста', u:'кг', p:240, step:0.5, where:'Пятёрочка', g:'Крупы и бакалея', kcal:800, prot:44, fat:5, carb:170},
-  ketchup:  {n:'Кетчуп', u:'кг', p:200, step:0.35, where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:930, prot:18, fat:2, carb:210},
-  mayonez:  {n:'Майонез', u:'кг', p:180, step:0.4, where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:6270, prot:3, fat:670, carb:26},
-  maslo_p:  {n:'Масло подсолнечное', u:'л', p:156.69, step:1, where:'Светофор, Лента', g:'Крупы и бакалея', kcal:8990, prot:0, fat:999, carb:0},
-  sahar:    {n:'Сахар', u:'кг', p:85.33, step:1, where:'любой', g:'Крупы и бакалея', kcal:3990, prot:0, fat:0, carb:999},
-  sol:      {n:'Соль, специи, чай — докупка', u:'наб', p:120, step:1, where:'любой', g:'Крупы и бакалея', kcal:0, prot:0, fat:0, carb:0, noExtra:true},
+  sosiski:  {n:'Сосиски', u:'кг', p:550.42, step:0.4, pack:{l:['упаковка','упаковки','упаковок'], s:0.4},  where:'Пятёрочка, по акции', g:'Мясо', kcal:2660, prot:110, fat:240, carb:20},
+  grechka:  {n:'Гречка', u:'кг', p:86.52, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3080, prot:126, fat:33, carb:620},
+  ris:      {n:'Рис', u:'кг', p:124.37, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3330, prot:70, fat:10, carb:780},
+  perlovka: {n:'Перловка', u:'кг', p:70, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3200, prot:90, fat:12, carb:670},
+  psheno:   {n:'Пшено', u:'кг', p:66.77, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3480, prot:110, fat:33, carb:690},
+  yachka:   {n:'Ячневая крупа', u:'кг', p:60, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3130, prot:100, fat:13, carb:660},
+  kukur_kr: {n:'Кукурузная крупа', u:'кг', p:80, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3280, prot:80, fat:12, carb:710},
+  bulgur:   {n:'Булгур', u:'кг', p:150, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Лента, Магнит', g:'Крупы и бакалея', kcal:3420, prot:120, fat:13, carb:760},
+  goroh:    {n:'Горох колотый', u:'кг', p:90, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3000, prot:200, fat:20, carb:500},
+  chechev:  {n:'Чечевица', u:'кг', p:150, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3000, prot:240, fat:15, carb:460},
+  fasol_s:  {n:'Фасоль сухая', u:'кг', p:140, step:0.9, pack:{l:['пачка','пачки','пачек'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:2980, prot:210, fat:20, carb:470},
+  makaron:  {n:'Макароны', u:'кг', p:122.72, step:0.45, pack:{l:['пачка','пачки','пачек'], s:0.45},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3400, prot:120, fat:13, carb:700},
+  vermish:  {n:'Вермишель', u:'кг', p:120.89, step:0.45, pack:{l:['пачка','пачки','пачек'], s:0.45},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:3400, prot:110, fat:13, carb:710},
+  muka:     {n:'Мука', u:'кг', p:56.7, step:2, pack:{l:['пачка','пачки','пачек'], s:2},  where:'любой', g:'Крупы и бакалея', kcal:3420, prot:100, fat:12, carb:740},
+  fasol:    {n:'Фасоль консервированная', u:'кг', p:325, step:0.4, pack:{l:['банка','банки','банок'], s:0.4},  where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:1000, prot:65, fat:5, carb:170},
+  gorosh_k: {n:'Горошек консервированный', u:'кг', p:180, step:0.4, pack:{l:['банка','банки','банок'], s:0.4},  where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:550, prot:35, fat:2, carb:95},
+  kukur_k:  {n:'Кукуруза консервированная', u:'кг', p:200, step:0.4, pack:{l:['банка','банки','банок'], s:0.4},  where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:580, prot:22, fat:13, carb:110},
+  pasta_t:  {n:'Томатная паста', u:'кг', p:240, step:0.38, pack:{l:['банка','банки','банок'], s:0.38},  where:'Пятёрочка', g:'Крупы и бакалея', kcal:800, prot:44, fat:5, carb:170},
+  ketchup:  {n:'Кетчуп', u:'кг', p:200, step:0.35, pack:{l:['банка','банки','банок'], s:0.35},  where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:930, prot:18, fat:2, carb:210},
+  mayonez:  {n:'Майонез', u:'кг', p:180, step:0.4, pack:{l:['банка','банки','банок'], s:0.4},  where:'Пятёрочка, Магнит', g:'Крупы и бакалея', kcal:6270, prot:3, fat:670, carb:26},
+  maslo_p:  {n:'Масло подсолнечное', u:'л', p:156.69, step:0.9, pack:{l:['бутылка','бутылки','бутылок'], s:0.9},  where:'Светофор, Лента', g:'Крупы и бакалея', kcal:8990, prot:0, fat:999, carb:0},
+  sahar:    {n:'Сахар', u:'кг', p:85.33, step:1, pack:{l:['пачка','пачки','пачек'], s:1},  where:'любой', g:'Крупы и бакалея', kcal:3990, prot:0, fat:0, carb:999},
+  sol:      {n:'Соль, специи, чай — докупка', u:'наб', p:120, step:1, pack:{l:['набор','набора','наборов'], s:1},  where:'любой', g:'Крупы и бакалея', kcal:0, prot:0, fat:0, carb:0, noExtra:true},
   kartofel: {n:'Картофель', u:'кг', p:61.75, step:1, where:'рынок, сейчас сезон', g:'Овощи', kcal:770, prot:20, fat:4, carb:165},
   luk:      {n:'Лук', u:'кг', p:58.88, step:0.5, where:'рынок, Пятёрочка', g:'Овощи', kcal:410, prot:14, fat:0, carb:90},
   morkov:   {n:'Морковь', u:'кг', p:60.72, step:0.5, where:'рынок, Пятёрочка', g:'Овощи', kcal:350, prot:13, fat:1, carb:70},
@@ -326,19 +323,19 @@ const P = {
   svekla:   {n:'Свёкла', u:'кг', p:53.46, step:1, where:'рынок', g:'Овощи', kcal:420, prot:15, fat:1, carb:87},
   kabachok: {n:'Кабачок', u:'кг', p:90, step:1, where:'рынок, сейчас сезон', g:'Овощи', kcal:240, prot:6, fat:3, carb:46},
   tykva:    {n:'Тыква', u:'кг', p:70, step:1.5, where:'рынок, сейчас сезон', g:'Овощи', kcal:220, prot:10, fat:1, carb:44},
-  ogurcy_s: {n:'Огурцы солёные', u:'кг', p:200, step:0.7, where:'Пятёрочка, Магнит', g:'Овощи', kcal:110, prot:8, fat:1, carb:17},
-  kvashen:  {n:'Квашеная капуста', u:'кг', p:150, step:0.5, where:'рынок, Пятёрочка', g:'Овощи', kcal:190, prot:14, fat:1, carb:30},
-  shampin:  {n:'Шампиньоны', u:'кг', p:250, step:0.5, where:'Пятёрочка, Магнит', g:'Овощи', kcal:220, prot:43, fat:10, carb:1},
-  smes:     {n:'Овощная смесь замороженная', u:'кг', p:170, step:0.4, where:'Светофор', g:'Овощи', kcal:400, prot:20, fat:3, carb:70},
-  yaico:    {n:'Яйца', u:'шт', p:9.3, step:10, where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:70, prot:6.3, fat:5, carb:0.4, m:0.055},
-  kefir:    {n:'Кефир', u:'л', p:110.93, step:1, where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:530, prot:30, fat:25, carb:40},
-  moloko:   {n:'Молоко', u:'л', p:97.45, step:1, where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:600, prot:30, fat:32, carb:47},
-  ryazhen:  {n:'Ряженка', u:'л', p:120, step:1, where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:670, prot:29, fat:40, carb:42},
-  smetana:  {n:'Сметана', u:'кг', p:351.82, step:0.3, where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:2000, prot:25, fat:200, carb:32},
-  syr:      {n:'Сыр', u:'кг', p:943.29, step:0.2, where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:3600, prot:250, fat:280, carb:0},
-  maslo_s:  {n:'Масло сливочное', u:'кг', p:1094.59, step:0.18, where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:7480, prot:8, fat:825, carb:8},
-  lavash:   {n:'Лаваш тонкий', u:'кг', p:200, step:0.3, where:'Пятёрочка, Магнит', g:'Хлеб', kcal:2360, prot:78, fat:12, carb:475},
-  hleb:     {n:'Хлеб', u:'кг', p:115, step:0.4, where:'любой', g:'Хлеб', kcal:2400, prot:80, fat:32, carb:490}
+  ogurcy_s: {n:'Огурцы солёные', u:'кг', p:200, step:0.7, pack:{l:['банка','банки','банок'], s:0.7},  where:'Пятёрочка, Магнит', g:'Овощи', kcal:110, prot:8, fat:1, carb:17},
+  kvashen:  {n:'Квашеная капуста', u:'кг', p:150, step:0.5, pack:{l:['упаковка','упаковки','упаковок'], s:0.5},  where:'рынок, Пятёрочка', g:'Овощи', kcal:190, prot:14, fat:1, carb:30},
+  shampin:  {n:'Шампиньоны', u:'кг', p:250, step:0.5, pack:{l:['упаковка','упаковки','упаковок'], s:0.5},  where:'Пятёрочка, Магнит', g:'Овощи', kcal:220, prot:43, fat:10, carb:1},
+  smes:     {n:'Овощная смесь замороженная', u:'кг', p:170, step:0.4, pack:{l:['пакет','пакета','пакетов'], s:0.4},  where:'Светофор', g:'Овощи', kcal:400, prot:20, fat:3, carb:70},
+  yaico:    {n:'Яйца', u:'шт', p:9.3, step:10, pack:{l:['десяток','десятка','десятков'], s:10},  where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:70, prot:6.3, fat:5, carb:0.4, m:0.055},
+  kefir:    {n:'Кефир', u:'л', p:110.93, step:0.9, pack:{l:['пакет','пакета','пакетов'], s:0.9},  where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:530, prot:30, fat:25, carb:40},
+  moloko:   {n:'Молоко', u:'л', p:97.45, step:0.9, pack:{l:['пакет','пакета','пакетов'], s:0.9},  where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:600, prot:30, fat:32, carb:47},
+  ryazhen:  {n:'Ряженка', u:'л', p:120, step:0.45, pack:{l:['пакет','пакета','пакетов'], s:0.45},  where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:670, prot:29, fat:40, carb:42},
+  smetana:  {n:'Сметана', u:'кг', p:351.82, step:0.3, pack:{l:['банка','банки','банок'], s:0.3},  where:'Пятёрочка, Магнит', g:'Молочка и яйца', kcal:2000, prot:25, fat:200, carb:32},
+  syr:      {n:'Сыр', u:'кг', p:943.29, step:0.2, pack:{l:['упаковка','упаковки','упаковок'], s:0.2},  where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:3600, prot:250, fat:280, carb:0},
+  maslo_s:  {n:'Масло сливочное', u:'кг', p:1094.59, step:0.18, pack:{l:['пачка','пачки','пачек'], s:0.18},  where:'Пятёрочка, по акции', g:'Молочка и яйца', kcal:7480, prot:8, fat:825, carb:8},
+  lavash:   {n:'Лаваш тонкий', u:'кг', p:200, step:0.2, pack:{l:['упаковка','упаковки','упаковок'], s:0.2},  where:'Пятёрочка, Магнит', g:'Хлеб', kcal:2360, prot:78, fat:12, carb:475},
+  hleb:     {n:'Хлеб', u:'кг', p:115, step:0.6, pack:{l:['буханка','буханки','буханок'], s:0.6},  where:'любой', g:'Хлеб', kcal:2400, prot:80, fat:32, carb:490}
 };
 const BASE = Object.fromEntries(Object.entries(P).map(([k,v]) => [k, v.p]));
 const GROUPS = ['Мясо','Крупы и бакалея','Овощи','Молочка и яйца','Хлеб','Своё'];
@@ -543,10 +540,15 @@ const LOCKED = {
 };
 
 /* ---------- состояние ---------- */
-Object.keys(P).forEach(k => {
+function loadTweaks(k){
+  const sz = store.get('packs_' + k);
+  if (sz !== null && !isNaN(parseFloat(sz)) && P[k].pack){
+    P[k].pack.s = parseFloat(sz); P[k].step = parseFloat(sz);
+  }
   const v = store.get('price_' + k);
   if (v !== null && !isNaN(parseFloat(v))) P[k].p = parseFloat(v);
-});
+}
+Object.keys(P).forEach(loadTweaks);
 let checked = new Set(JSON.parse(store.get('checked') || '[]'));
 let custom  = JSON.parse(store.get('custom') || '[]');
 let unlocked = JSON.parse(store.get('unlocked') || '[]');
@@ -554,7 +556,7 @@ function mount(key){
   if (P[key] || !CATALOG[key]) return 0;
   const saved = store.get('price_' + key);
   P[key] = Object.assign({}, CATALOG[key]);
-  if (saved !== null && !isNaN(parseFloat(saved))) P[key].p = parseFloat(saved);
+  loadTweaks(key);
   let n = 0;
   for (const [dk, dv] of Object.entries(LOCKED))
     if (!M[dk] && Object.keys(dv.ing).every(i => P[i])){ M[dk] = dv; n++; }
@@ -608,7 +610,6 @@ const gram = (k, q) => P[k].u === 'шт'
   ? (Math.round(q * 10) / 10) + ' шт'
   : q >= 1 ? (Math.round(q * 100) / 100) + ' ' + P[k].u : Math.round(q * 1000) + (P[k].u === 'л' ? ' мл' : ' г');
 let open1 = null;
-let onlyUsed = store.get('onlyUsed') !== '0';
 let budgetNote = '';
 let autoDays = 10;
 let pin = JSON.parse(store.get('pin') || '{}');   // true — держать всегда, false — не предлагать
@@ -617,7 +618,33 @@ const curDays = () => {
   return v === 'auto' ? autoDays : Math.max(3, Math.min(21, +v || 10));
 };
 const rub = v => Math.round(v).toLocaleString('ru-RU') + ' ₽';
-const amt = i => i.unit === 'шт' ? i.qty + ' шт' : (i.qty % 1 === 0 ? i.qty : +i.qty.toFixed(2)) + ' ' + i.unit;
+function plural(n, f){
+  const a = Math.abs(n) % 100, b = a % 10;
+  return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b > 1 && b < 5 ? 1 : 2];
+}
+// сколько это в упаковках и сколько всего
+function amtPack(i){
+  const p = P[i.k] && P[i.k].pack;
+  if (!p) return null;
+  const n = Math.round(i.qty / p.s);
+  return n + ' ' + plural(n, p.l);
+}
+function amtRaw(i){
+  if (i.unit === 'шт') return i.qty + ' шт';
+  const v = i.qty % 1 === 0 ? i.qty : +i.qty.toFixed(2);
+  return v + ' ' + i.unit;
+}
+const amt = i => amtPack(i) || amtRaw(i);
+const money = v => (Math.round(v * 100) / 100).toLocaleString('ru-RU') + ' ₽';
+// «800 г · 69 ₽/пачка · 87 ₽/кг» или «61,75 ₽/кг»
+function unitInfo(k){
+  const v = P[k];
+  if (!v) return '';
+  if (!v.pack) return money(v.p) + '/' + v.u;
+  const size = v.u === 'шт' ? v.pack.s + ' шт' : v.pack.s >= 1 ? v.pack.s + ' ' + v.u : Math.round(v.pack.s * 1000) + (v.u === 'л' ? ' мл' : ' г');
+  const per = v.u === 'шт' ? money(v.p) + '/шт' : money(v.p) + '/' + v.u;
+  return size + ' · ' + money(v.p * v.pack.s) + '/' + v.pack.l[0] + ' · ' + per;
+}
 
 /* ---------- расчёт ---------- */
 function plan(){
@@ -697,7 +724,7 @@ function render(){
       return `<div class="group-head">${g}</div>` + rows.map(i => `
         <div class="row ${checked.has(i.k) ? 'done' : ''}" data-k="${i.k}" role="button" tabindex="0">
           <span class="box">${checked.has(i.k) ? '✓' : ''}</span>
-          <span class="nm">${i.name}${i.where ? `<span class="where">${i.where}</span>` : ''}</span>
+          <span class="nm">${i.name}<span class="where">${P[i.k] ? unitInfo(i.k) + ' · ' : ''}${i.where}</span></span>
           <span class="amt mono">${amt(i)}</span>
           <span class="pr mono">${rub(i.cost)}</span>
         </div>`).join('');
@@ -876,19 +903,24 @@ function renderProfile(){
 }
 
 function renderPrices(){
-  const used = {};
-  if (cur && !cur.empty) cur.items.forEach(i => { if (P[i.k]) used[i.k] = i; });
-  const rows = Object.entries(P).filter(([k]) => !onlyUsed || used[k]);
-  document.getElementById('prices').innerHTML = rows.map(([k,v]) => {
-    const u = used[k];
-    return `<tr${u ? '' : ' style="opacity:.5"'}>
-      <td>${v.n}<span class="where">${v.where}</span></td>
-      <td class="mono" style="text-align:right;white-space:nowrap">${u ? amt(u) + '<span class="where">' + rub(u.cost) + '</span>' : '—'}</td>
-      <td><input type="number" step="0.01" min="0" data-p="${k}" value="${v.p}" aria-label="Цена: ${v.n}">
-      <span style="color:var(--muted);font-size:12.5px">₽/${v.u}</span></td></tr>`;
-  }).join('') + (rows.length ? '' : '<tr><td colspan="3" style="color:var(--muted)">Ни одного блюда не выбрано.</td></tr>');
-  document.getElementById('only-used').classList.toggle('on', onlyUsed);
-  document.getElementById('only-used').textContent = onlyUsed ? 'Только используемые' : 'Показаны все продукты';
+  const rows = [];
+  for (const g of GROUPS){
+    const list = Object.entries(P).filter(([,v]) => v.g === g);
+    if (!list.length) continue;
+    rows.push(`<tr><td colspan="3" class="group-head" style="border:none;padding-top:16px">${g}</td></tr>`);
+    list.forEach(([k,v]) => {
+      const unit = v.u === 'шт' ? 'шт' : v.u;
+      rows.push(`<tr>
+        <td>${v.n}<span class="where">${v.pack ? money(v.p) + '/' + unit : ''}${v.pack ? ' · ' : ''}${v.where}</span></td>
+        <td style="text-align:right;white-space:nowrap">${v.pack
+          ? `<input type="number" step="0.01" min="0.01" data-s="${k}" value="${v.pack.s}" style="width:66px" aria-label="Размер упаковки: ${v.n}">
+             <span style="color:var(--muted);font-size:12.5px">${unit}</span>`
+          : '<span style="color:var(--muted);font-size:13px">на вес</span>'}</td>
+        <td><input type="number" step="0.01" min="0" data-p="${k}" value="${v.pack ? Math.round(v.p * v.pack.s * 100) / 100 : v.p}" aria-label="Цена: ${v.n}">
+          <span style="color:var(--muted);font-size:12.5px">₽/${v.pack ? v.pack.l[0] : unit}</span></td></tr>`);
+    });
+  }
+  document.getElementById('prices').innerHTML = rows.join('');
 }
 
 function renderCustom(){
@@ -1054,8 +1086,19 @@ document.getElementById('excl').addEventListener('click', e => {
 });
 
 document.getElementById('prices').addEventListener('input', e => {
+  const sk = e.target.dataset.s;
+  if (sk){
+    const sz = parseFloat(e.target.value);
+    if (isNaN(sz) || sz <= 0) return;
+    P[sk].pack.s = sz; P[sk].step = sz;
+    store.set('packs_' + sk, sz);
+    render(); maybeFit();
+    say('said2', 'Размер упаковки сохранён');
+    return;
+  }
   const k = e.target.dataset.p; if (!k) return;
-  const v = parseFloat(e.target.value); if (isNaN(v) || v < 0) return;
+  const raw = parseFloat(e.target.value); if (isNaN(raw) || raw < 0) return;
+  const v = P[k].pack ? raw / P[k].pack.s : raw;   // цена вводится за упаковку
   P[k].p = v; store.set('price_' + k, v); render(); maybeFit(); say('said2','Цена сохранена');
 });
 
@@ -1156,12 +1199,6 @@ document.getElementById('mine').addEventListener('click', e => {
 if (budget) fitBudget(true);
 });
 
-document.getElementById('only-used').addEventListener('click', () => {
-  onlyUsed = !onlyUsed;
-  store.set('onlyUsed', onlyUsed ? '1' : '0');
-  renderPrices();
-});
-
 document.getElementById('reset').addEventListener('click', () => {
   Object.entries(BASE).forEach(([k,v]) => { P[k].p = v; store.del('price_' + k); });
   renderPrices(); render(); say('said2','Вернул цены Росстата');
@@ -1172,7 +1209,7 @@ document.getElementById('uncheck').addEventListener('click', () => {
 document.getElementById('copy').addEventListener('click', async () => {
   const txt = `Закупка на ${cur.days} дней\n\n` + GROUPS.map(g => {
     const rows = cur.items.filter(i => i.group === g);
-    return rows.length ? g + '\n' + rows.map(i => `  ${i.name} — ${amt(i)} — ${rub(i.cost)}`).join('\n') : '';
+    return rows.length ? g + '\n' + rows.map(i => `  ${i.name} — ${amt(i)}${P[i.k] && P[i.k].pack ? ' (' + amtRaw(i) + ')' : ''} — ${rub(i.cost)}${P[i.k] ? ' [' + unitInfo(i.k) + ']' : ''}`).join('\n') : '';
   }).filter(Boolean).join('\n\n') + `\n\nИтого ${rub(cur.items.reduce((s,i) => s + i.cost, 0))}`;
   try { await navigator.clipboard.writeText(txt); say('said1','Список скопирован'); }
   catch(e){ say('said1','Скопировать не вышло — выдели список вручную'); }
